@@ -45,6 +45,12 @@ public:
         mVec3_c field_0x10;
     };
 
+    dAcEsm_c *create(const mVec3_c *pos, const mAng3_c *rot) const {
+        return static_cast<dAcEsm_c *>(
+            dAcEnBase_c::create(fProfile::E_SM, mRoomID, (mParams & ~0xFF) | mType, pos, rot, nullptr, 0xFFFFFFFF)
+        );
+    }
+
 public:
     dAcEsm_c() : mScnCallback(this), mStateMgr(*this, sStateID::null) {}
     virtual ~dAcEsm_c() {}
@@ -108,11 +114,13 @@ public:
     mAng fn_187_51F0(bool);
     u32 fn_187_52A0();
     void fn_187_5390();
+    void fn_187_5430();
     bool checkSize(SmSize_e) const; // fn_187_5670
     void fn_187_5730();
     void fn_187_5810();
     void fn_187_5940();
     bool fn_187_5AC0() const;
+    bool fn_187_5F70();
     void fn_187_61B0(u8);
     bool fn_187_6B10();
     void fn_187_6C20(bool);
@@ -126,6 +134,11 @@ private:
     }
     void setArray(int i) {
         sSomeArray[i] = false;
+    }
+
+    void setDamageTimer(u16 t) {
+        mDamageTimer = t;
+        field_0xBB2 = t;
     }
 
 private:
@@ -184,7 +197,7 @@ private:
     /* 0xBA0 */ u32 field_0xBA0;
     /* 0xBA4 */ s16 field_0xBA4;
     /* 0xBA6 */ s16 field_0xBA6;
-    /* 0xBA8 */ u16 field_0xBA8;
+    /* 0xBA8 */ s16 field_0xBA8;
     /* 0xBAA */ u16 field_0xBAA;
     /* 0xBAC */ u16 field_0xBAC;
     /* 0xBAE */ u16 mTimer_0xBAE;
@@ -193,7 +206,7 @@ private:
     /* 0xBB4 */ u16 mDamageTimer;
     /* 0xBB6 */ u16 field_0xBB6;
     /* 0xBB8 */ u16 field_0xBB8;
-    /* 0xBB9 */ u8 _BB9[0xBBC - 0xBBA];
+    /* 0xBBA */ u16 field_0xBBA;
     /* 0xBBC */ u8 field_0xBBC;
     /* 0xBBD */ u8 field_0xBBD;
     /* 0xBBE */ u8 mType;
@@ -219,7 +232,6 @@ private:
     static bool sSomeArray[9];
 
     static const u16 sEmitterResArr[8];
-    static const SmData_c sSmDataArr[8];
 
     static s32 sValueFromPlayer;
     static s32 sTimer;

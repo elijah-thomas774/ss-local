@@ -35,6 +35,7 @@
 #include "nw4r/g3d/res/g3d_resfile.h"
 #include "nw4r/g3d/res/g3d_resmdl.h"
 #include "nw4r/g3d/res/g3d_resnode.h"
+#include "nw4r/math/math_arithmetic.h"
 #include "rvl/MTX/mtx.h"
 #include "rvl/MTX/mtxvec.h"
 #include "s/s_Math.h"
@@ -96,6 +97,22 @@ STATE_DEFINE(dAcEsm_c, Dead);
 
 bool dAcEsm_c::sSomeArrayInit = false;
 bool dAcEsm_c::sSomeArray[9];
+
+const u16 dAcEsm_c::sEmitterResArr[8] = {PARTICLE_RESOURCE_ID_MAPPING_283_, PARTICLE_RESOURCE_ID_MAPPING_284_,
+                                         PARTICLE_RESOURCE_ID_MAPPING_285_, PARTICLE_RESOURCE_ID_MAPPING_278_,
+                                         PARTICLE_RESOURCE_ID_MAPPING_281_, PARTICLE_RESOURCE_ID_MAPPING_282_,
+                                         PARTICLE_RESOURCE_ID_MAPPING_280_, PARTICLE_RESOURCE_ID_MAPPING_279_};
+
+const dAcEsm_c::SmData_c sSmDataArr[8] = {
+    {     0,      0,  mVec3_c(0.f,  0.f, 0.f),  mVec3_c(0.f,  0.f, 0.f)},
+    {0x4000, 0xC000, mVec3_c(25.f, 30.f, 0.f), mVec3_c(25.f, 30.f, 0.f)},
+    {     0,      0,  mVec3_c(0.f, 40.f, 0.f),  mVec3_c(0.f,  0.f, 0.f)},
+    {0x4000, 0xC000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
+    {0xC000, 0x4000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
+    {0x4000, 0xC000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
+    {0xC000, 0x4000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
+    {     0,      0,  mVec3_c(0.f, 40.f, 0.f),  mVec3_c(0.f,  0.f, 0.f)},
+};
 
 int dAcEsm_c::actorCreate() {
     // Check for Batreaux being human and on Skyloft/Waterfall cave
@@ -775,19 +792,89 @@ void dAcEsm_c::initializeState_Walk() {
     mAcceleration = -3.f;
 }
 void dAcEsm_c::executeState_Walk() {
-    field_0xBA6 += (s16)(1000.f + field_0xB70 / mScaleTarget.x);
-    if (sLib::calcTimer(&field_0xBB6)) {
+    // NONMATCHING
+    // Jank in the volatile bool I think being unused
+    dAcPy_c *pPlayer = dAcPy_c::GetLinkM();
+
+    field_0xBA6 += s16(1000.f + field_0xB70 / mScaleTarget.x);
+    sLib::calcTimer(&field_0xBB6);
+    if (fn_187_5F70()) {
         return;
     }
     if (fn_187_42C0()) {
         return;
     }
+
+    volatile bool _b = (mAng(0) * 150.f) * mScaleTarget.x < 43.f;
+
     fn_187_5810();
+    f32 _b0 = (mAng(0) * 250.f) * mScaleTarget.x;
+    field_0xBCB = 0;
+    fn_187_6B10();
+
     mMdl.setRate(1.f);
     field_0xBCB = 0;
 
-    if (field_0xB78 == 0.f) {
+    if (field_0xB78 != 0.f && (mStartingPos.squareDistanceToXZ(mStartingPos)) < field_0xB78 * field_0xB78 &&
+        fn_800301b0(mPosition, mRotation.y, true, _b0)) {
+        mPosCopy1.set(mStartingPos);
+        field_0xBBA = field_0xBB8 = cM::rndF(100.f) + 100.f;
+        mSpeed = 0.f;
+        field_0xBA8 = 0;
     } else {
+        if (field_0xB78 == 0.f || (field_0xBBA == 0 && isWithinPlayerRadius(1000.f))) {
+            mVec3_c diff = pPlayer->getCenterTranslation() - mPositionCopy2;
+            mVec3_c _ = diff;
+            f32 dist = diff.absXZ();
+
+            field_0xBB8 = 0;
+            if (!fn_800301b0(mPosition, cLib::targetAngleY(mPosition, pPlayer->mPosition), true, dist)) {
+                mPosCopy1.set(pPlayer->mPosition);
+                sLib::addCalcScaledDiff(&field_0xB6C, 0.2f, 0.5f, 0.5f);
+                field_0xBCB = 1;
+
+                if (field_0xBA8 == 0) {
+                    field_0xBA8 = 1;
+                    field_0xB6C = mAng(0) * 0.1f + 1.f;
+                    field_0xB68 = mAng(0) * 0.01f + 0.5f;
+                }
+
+                if (field_0xBC5 != 2) {
+                    mMdl.setRate(4.f);
+                }
+                field_0xBB8 = cM::rndF(100.f) + 100.f;
+            }
+        } else {
+            field_0xBA8 = 0;
+        }
+    }
+
+    sLib::calcTimer(&field_0xBBA);
+    if (0 == sLib::calcTimer(&field_0xBB8) && mStartingPos.squareDistanceToXZ(mPosition) < field_0xB78 * field_0xB78) {
+        mPosCopy1.set(mStartingPos);
+
+        mPosCopy1.x += cM::rndFX(field_0xB78);
+        mPosCopy1.z += cM::rndFX(field_0xB78);
+
+        field_0xBB8 = cM::rndF(30.f) + 30.f;
+    }
+
+    if (field_0xBB8 != 0) {
+        field_0xBAA = cLib::targetAngleY(mPosition, mPosCopy1);
+    }
+
+    sLib::addCalcAngle(mAngle.y.ref(), field_0xBAA, 4, 0x100);
+    fn_187_5430();
+
+    if (0 == sLib::calcTimer(&field_0xBC1)) {
+        if (mType == SM_YELLOW) {
+            mStateMgr.changeState(StateID_Electrical);
+        } else if (!fn_187_6B10() && isWithinPlayerRadius(mScaleTarget.y * 500.f) &&
+                   std::abs(mPosition.y - pPlayer->mPosition.y) < 200.f) {
+            if (mType != SM_RED) {
+                mStateMgr.changeState(StateID_Shake);
+            }
+        }
     }
 }
 void dAcEsm_c::finalizeState_Walk() {}
@@ -944,6 +1031,7 @@ void dAcEsm_c::fn_187_44C0() {
 void dAcEsm_c::fn_187_4540(int param0) {
     const dAcPy_c *player = dAcPy_c::GetLink();
     mAng3_c rot = getAngle();
+    mVec3_c spawnPos;
 
     fn_187_44C0();
     if (mStateMgr.isState(StateID_Dead)) {
@@ -970,32 +1058,30 @@ void dAcEsm_c::fn_187_4540(int param0) {
         mScaleTarget *= 0.5f;
         mScale *= 0.5f;
 
-        rot.y = (s16)cLib::targetAngleY(mPosition, player->mPosition) + cM::rndFX(1024.f);
-
+        rot.y = cLib::targetAngleY(mPosition, player->mPosition) + cM::rndFX(1024.f);
         if (field_0xB98 != 2) {
-            rot.y = fn_187_5150(false);
+            rot.y = fn_187_51F0(false);
         }
-        rot.y = mOrigRotZ;
+        rot.z = mOrigRotZ;
 
-        mVec3_c spawnPos;
-        mHitPos.CopyTo(spawnPos);
+        spawnPos.set(mHitPos);
         if (field_0xB98 == 1 || field_0xB98 == 2) {
-            mPosition.CopyTo(spawnPos);
+            spawnPos.set(mPosition);
         }
+
+        const SmData_c *data = sSmDataArr;
 
         f32 scale = 0.9999f;
         f32 upper = 30.f;
         f32 lower = 20.f;
         f32 v = 0.f;
         f32 lowest = 10.f;
-        u8 timer = 8;
-        u8 bce = 1;
-        u8 bb8 = 0;
         f32 f = 16384.f;
+        s32 timer = 8;
+        s32 bce = 1;
+        s32 bb8 = 0;
 
-        dAcEsm_c *pChild = static_cast<dAcEsm_c *>(
-            create(fProfile::E_SM, mRoomID, (mParams & ~0xFF) | mType, &spawnPos, &rot, nullptr, 0)
-        );
+        dAcEsm_c *pChild = create(&spawnPos, &rot);
         if (pChild == nullptr) {
             return;
         }
@@ -1005,15 +1091,15 @@ void dAcEsm_c::fn_187_4540(int param0) {
             mVec3_c temp1 = mScale;
             temp0 *= scale;
             temp1 *= scale;
-            temp0.CopyTo(pChild->mScaleTarget);
-            temp1.CopyTo(pChild->mScale);
+
+            pChild->mScaleTarget.set(temp0);
+            pChild->mScale.set(temp1);
         } else {
-            mScaleTarget.CopyTo(pChild->mScaleTarget);
+            pChild->mScaleTarget.set(mScaleTarget);
             pChild->mScale.set(mScale.x, mScale.y, mScale.z);
         }
         pChild->mStartingPos.set(mStartingPos.x, mStartingPos.y, mStartingPos.z);
-        pChild->mDamageTimer = timer;
-        pChild->field_0xBB2 = timer;
+        pChild->setDamageTimer(timer);
         pChild->field_0xB98 = field_0xB98;
         pChild->field_0xBCE = bce;
         pChild->mStateMgr.changeState(StateID_BirthJump);
@@ -1022,9 +1108,8 @@ void dAcEsm_c::fn_187_4540(int param0) {
             rot.y -= mAng(f + cM::rndFX(4096.f));
         } else {
             rot.y = fn_187_51F0(true);
-            const f32 y = sSmDataArr[field_0xB98].field_0x04.y;
-            if (y != v) {
-                pChild->mVelocity.y = y;
+            if (data[field_0xB98].field_0x04.y != v) {
+                pChild->mVelocity.y = data[field_0xB98].field_0x04.y;
 
                 pChild->mVelocity.y *= mScaleTarget.y;
                 if (field_0xB98 != 2) {
@@ -1039,7 +1124,7 @@ void dAcEsm_c::fn_187_4540(int param0) {
             }
 
             pChild->field_0xB84 = pChild->mVelocity.y;
-            pChild->mSpeed = mScaleTarget.x * sSmDataArr[field_0xB98].field_0x04.x;
+            pChild->mSpeed = mScaleTarget.x * data[field_0xB98].field_0x04.x;
             if (pChild->mSpeed != v && pChild->mSpeed < lowest) {
                 pChild->mSpeed = lowest;
             }
@@ -1246,9 +1331,9 @@ void dAcEsm_c::fn_187_61B0(u8 param0) {
     const dAcPy_c *player = dAcPy_c::GetLink();
 
     // Yellowish
-    mColor clr1(0xFF, 0xC8, 0x32, 0xFF);
+    mColor clr1(0xFF, 0xC8, 0x32, 0xFF); // #FFC832FF
     // Redish
-    mColor clr2(0xC8, 0x32, 0x00, 0xFF);
+    mColor clr2(0xC8, 0x32, 0x00, 0xFF); // #C83200FF
 
     mAng3_c ang(0, 0, 0);
     mMtx_c mtx_trans = mWorldMtx;
@@ -1256,35 +1341,38 @@ void dAcEsm_c::fn_187_61B0(u8 param0) {
 
     if (mType == SM_BLUE) {
         // Blue/purple
-        clr1 = mColor(0x64, 0x64, 0xFF, 0xFF);
+        clr1 = mColor(0x64, 0x64, 0xFF, 0xFF); // #6464FFFF
         // Purple
-        clr2 = mColor(0x50, 0x50, 0x96, 0xFF);
+        clr2 = mColor(0x50, 0x50, 0x96, 0xFF); // #505096FF
     } else if (mType == SM_YELLOW) {
         // Yellow
-        clr1 = mColor(0xFF, 0xFF, 0x00, 0xFF);
+        clr1 = mColor(0xFF, 0xFF, 0x00, 0xFF); // #FFFF00FF
         // Darker Yellow
-        clr2 = mColor(0x96, 0x96, 0x00, 0xFF);
+        clr2 = mColor(0x96, 0x96, 0x00, 0xFF); // #969600FF
     } else if (mType == SM_GREEN) {
         // Light Green
-        clr1 = mColor(0x00, 0xBE, 0x73, 0xFF);
+        clr1 = mColor(0x00, 0xBE, 0x73, 0xFF); // #00BE73FF
         // Darker Blue-Green
-        clr2 = mColor(0x00, 0x73, 0x69, 0xFF);
+        clr2 = mColor(0x00, 0x73, 0x69, 0xFF); // #007369FF
     }
 
     switch (param0) {
         case 0: {
-            mMtx_c mtx_scale;
-            ang.set(0, 0, 0);
-            ang.z += player->vt_0x258();
-            MTXTrans(mtx_trans, mHitPos.x, mHitPos.y, mHitPos.z);
+            ang.x = 0;
+            ang.y = 0x4000;
+            ang.z = player->vt_0x258() + 0x4000;
+
+            mtx_trans.transS(mHitPos);
             mtx_trans.YrotM(mRotation.y);
             mtx_trans.ZYXrotM(ang);
-            MTXScale(mtx_scale, mScaleTarget.x, mScaleTarget.x, mScaleTarget.x);
 
+            mMtx_c mtx_scale;
+            mtx_scale.scaleS(mScaleTarget.x);
             mtx_trans += mtx_scale;
-            for (int i = 0; i <= 2; ++i) {
-                dEmitterBase_c *emitter =
-                    dJEffManager_c::spawnEffect(sEmitterResArr[param0 + i], mtx_trans, &clr1, &clr2, 0, 0);
+
+            dEmitterBase_c *emitter;
+            for (int i = 0; i <= 2; i++) {
+                emitter = dJEffManager_c::spawnEffect(sEmitterResArr[i + param0], mtx_trans, &clr1, &clr2, 0, 0);
                 if (emitter == nullptr) {
                     continue;
                 }
@@ -1329,8 +1417,9 @@ void dAcEsm_c::fn_187_61B0(u8 param0) {
         } break;
         case 3: {
             mMtx_c mtx_scale;
-            MTXTrans(mtx_trans, mPosition.x, mPosition.y, mPosition.z);
-            MTXScale(mtx_scale, mScaleTarget.x, mScaleTarget.y, mScaleTarget.z);
+            mtx_trans.transS(mPosition);
+            mtx_scale.scaleS(mScaleTarget);
+
             mtx_trans += mtx_scale;
 
             if (mEffArr[0].startEffect(sEmitterResArr[3], mtx_trans, &clr1, &clr2)) {
@@ -1443,19 +1532,3 @@ void dAcEsm_c::fn_187_6C20(bool param0) {
     field_0xBCE = 1;
     mStateMgr.changeState(StateID_BirthJump);
 }
-
-const u16 dAcEsm_c::sEmitterResArr[8] = {PARTICLE_RESOURCE_ID_MAPPING_283_, PARTICLE_RESOURCE_ID_MAPPING_284_,
-                                         PARTICLE_RESOURCE_ID_MAPPING_285_, PARTICLE_RESOURCE_ID_MAPPING_278_,
-                                         PARTICLE_RESOURCE_ID_MAPPING_281_, PARTICLE_RESOURCE_ID_MAPPING_282_,
-                                         PARTICLE_RESOURCE_ID_MAPPING_280_, PARTICLE_RESOURCE_ID_MAPPING_279_};
-
-const dAcEsm_c::SmData_c dAcEsm_c::sSmDataArr[8] = {
-    {     0,      0,  mVec3_c(0.f,  0.f, 0.f),  mVec3_c(0.f,  0.f, 0.f)},
-    {0x4000, 0xC000, mVec3_c(25.f, 30.f, 0.f), mVec3_c(25.f, 30.f, 0.f)},
-    {     0,      0,  mVec3_c(0.f, 40.f, 0.f),  mVec3_c(0.f,  0.f, 0.f)},
-    {0x4000, 0xC000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
-    {0xC000, 0x4000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
-    {0x4000, 0xC000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
-    {0xC000, 0x4000, mVec3_c(20.f, 35.f, 0.f), mVec3_c(10.f, 25.f, 0.f)},
-    {     0,      0,  mVec3_c(0.f, 40.f, 0.f),  mVec3_c(0.f,  0.f, 0.f)},
-};

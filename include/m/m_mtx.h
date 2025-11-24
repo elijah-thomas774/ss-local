@@ -117,7 +117,9 @@ public:
     void scaleS(const mVec3_c &v) {
         MTXScale(*this, v.x, v.y, v.z);
     }
-
+    void scaleS(f32 s) {
+        MTXScale(*this, s, s, s);
+    }
     void scaleS(f32 x, f32 y, f32 z) {
         MTXScale(*this, x, y, z);
     }

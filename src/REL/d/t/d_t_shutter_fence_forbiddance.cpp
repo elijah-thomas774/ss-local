@@ -7,21 +7,21 @@ SPECIAL_ACTOR_PROFILE(
     TAG_SHUTTER_FENCE_FORBIDDANCE, dTgShutterFenceForbiddance_c, fProfile::TAG_SHUTTER_FENCE_FORBIDDANCE, 0x2A4, 0, 4
 );
 
-static dTgShutterFenceForbiddance_c *FIRST_PTR;
+dTgShutterFenceForbiddance_c *dTgShutterFenceForbiddance_c::spInstance;
 
 dTgShutterFenceForbiddance_c::dTgShutterFenceForbiddance_c() {
-    if (!FIRST_PTR) {
-        FIRST_PTR = this;
+    if (!spInstance) {
+        spInstance = this;
     }
 }
 dTgShutterFenceForbiddance_c::~dTgShutterFenceForbiddance_c() {
-    if (this == FIRST_PTR) {
-        FIRST_PTR = nullptr;
+    if (this == spInstance) {
+        spInstance = nullptr;
     }
 }
 
 int dTgShutterFenceForbiddance_c::create() {
-    if (this != FIRST_PTR) {
+    if (this != spInstance) {
         return FAILED;
     }
     return SUCCEEDED;

@@ -11,6 +11,8 @@ public:
     virtual int create() override;
     virtual int actorExecute() override;
 
+    static dTgShutterFenceForbiddance_c *spInstance;
+
 private:
 };
 

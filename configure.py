@@ -593,7 +593,7 @@ config.libs = [
             Object(Matching, "d/lyt/d_lyt_fader.cpp"),
             Object(Matching, "d/lyt/d_screen_fader.cpp"),
             Object(NonMatching, "d/a/d_a_bird_base.cpp"),
-            Object(NonMatching, "d/a/d_a_door_base.cpp"),
+            Object(Matching, "d/a/obj/d_a_obj_door_base.cpp"),
             Object(NonMatching, "d/lyt/d_lyt_map_markers.cpp"),
             Object(NonMatching, "d/d_pouch.cpp"),
             Object(NonMatching, "toBeSorted/d_beacon.cpp"),

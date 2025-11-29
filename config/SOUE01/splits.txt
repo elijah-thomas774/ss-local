@@ -1231,7 +1231,7 @@ d/a/d_a_bird_base.cpp:
 	.sdata      start:0x80572AB0 end:0x80572BB0
 	.sdata2     start:0x8057AC08 end:0x8057AC78
 
-d/a/d_a_door_base.cpp:
+d/a/obj/d_a_obj_door_base.cpp:
 	.text       start:0x80179130 end:0x801792C4 align:16
 	.ctors      start:0x804DB7DC end:0x804DB7E0
 	.data       start:0x80528F20 end:0x80528FB0

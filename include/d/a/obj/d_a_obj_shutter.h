@@ -1,23 +1,48 @@
 #ifndef D_A_OBJ_SHUTTER_H
 #define D_A_OBJ_SHUTTER_H
 
+#include "d/a/obj/d_a_obj_base.h"
 #include "d/a/obj/d_a_obj_door_base.h"
+#include "m/m3d/m_anmchr.h"
+#include "m/m3d/m_smdl.h"
 #include "s/s_State.hpp"
-#include "s/s_StateMgr.hpp"
+#include "toBeSorted/actor_event.h"
+#include "toBeSorted/d_flow_mgr.h"
 
 class dAcOShutter_c : public dAcObjDoor_c {
 public:
-    dAcOShutter_c() : mStateMgr(*this, sStateID::null) {}
+    dAcOShutter_c() : mStateMgr(*this, sStateID::null), mEventRelated(*this, 0) {}
     virtual ~dAcOShutter_c() {}
 
-    virtual bool canOpen() override;
+    virtual int draw() override;
+    virtual bool createHeap() override;
+    virtual int actorCreate() override;
+    virtual int actorExecute() override;
+    virtual int actorExecuteInEvent() override;
+    virtual void doInteraction(s32 /* Interaction */) override;
+
+    virtual bool canOpen() override;        // in Main Dol
+    virtual bool hasVisitedRoom() override; // in Main Dol
+    virtual void vt_0x88() override;
+    virtual void vt_0x8C() override;
 
     STATE_FUNC_DECLARE(dAcOShutter_c, Wait);
     STATE_FUNC_DECLARE(dAcOShutter_c, Open);
     STATE_FUNC_DECLARE(dAcOShutter_c, Close);
 
 private:
-    /* 0x??? */ STATE_MGR_DECLARE(dAcOShutter_c);
+    /* 0x33C */ m3d::smdl_c mMdl0;
+    /* 0x358 */ m3d::smdl_c mMdl1;
+    /* 0x374 */ m3d::smdl_c mMdl2;
+    /* 0x390 */ m3d::smdl_c mMdlArr0[2];
+    /* 0x3C8 */ m3d::smdl_c mMdlArr1[2];
+    /* 0x400 */ m3d::anmChr_c mAnmChr;
+    /* 0x438 */ STATE_MGR_DECLARE(dAcOShutter_c);
+    /* 0x474 */ dAcObjRef_c node_0x474;
+    /* 0x480 */ dAcObjRef_c node_0x480;
+    /* 0x48C */ dFlowMgr_c mFlowMgr;
+    /* 0x548 */ ActorEventRelated mEventRelated;
+    /* 0x598 */
 };
 
 #endif

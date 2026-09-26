@@ -874,9 +874,9 @@ bool dTgMassObjInstance::checkForHit(
             }
             hitPosition = link->mPosition;
             distance = mGroundHeight.distance(hitPosition);
-            if ((s32)link->getSpecificAttackDirection() == dAcPy_c::ATTACK_DIRECTION_DOWN ||
-                (s32)link->getSpecificAttackDirection() == dAcPy_c::ATTACK_DIRECTION_UP ||
-                (s32)link->getSpecificAttackDirection() == dAcPy_c::ATTACK_DIRECTION_STAB) {
+            if ((s32)link->getSpecificAttackDirection() == AT_DIR_D ||
+                (s32)link->getSpecificAttackDirection() == AT_DIR_U ||
+                (s32)link->getSpecificAttackDirection() == AT_DIR_STAB) {
                 if (distance < fVar20) {
                     isNotCut = 0;
                 } else {
@@ -893,8 +893,8 @@ bool dTgMassObjInstance::checkForHit(
                     hitPosition = dAcPy_c::GetLink()->getSwordPos();
 
                     distance = mGroundHeight.distance(hitPosition);
-                    if ((s32)link->getSpecificAttackDirection() != dAcPy_c::ATTACK_DIRECTION_DOWNRIGHT &&
-                        (s32)link->getSpecificAttackDirection() != dAcPy_c::ATTACK_DIRECTION_DOWNLEFT) {
+                    if ((s32)link->getSpecificAttackDirection() != AT_DIR_DL &&
+                        (s32)link->getSpecificAttackDirection() != AT_DIR_DR) {
                         return true;
                     }
                     if (distance >= fVar21) {

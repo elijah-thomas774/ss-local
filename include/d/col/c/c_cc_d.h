@@ -328,7 +328,7 @@ struct cCcD_SrcGObjTg {
     /* 0x04 */ u32 mSPrm;
     /* 0x08 */ cCcD_SrcGObjTgInfo mInfo;
     /* 0x0C */ u16 field_0x0C;
-    /* 0x0E */ u16 field_0x0E;
+    /* 0x0E */ u16 mTgDir; // cCcD_AtDir
 };
 
 enum dCcD_ObjAtType {
@@ -386,7 +386,21 @@ struct cCcD_SrcGObjAtInfo {
 enum cCcD_AtSPrm {
     AT_SPRM_DAMAGE = 0x4,
 };
+enum cCcD_AtDir {
+    AT_DIR_NONE = 0,
+    AT_DIR_D = (1 << 0),    // 0x0001
+    AT_DIR_DL = (1 << 1),   // 0x0002
+    AT_DIR_L = (1 << 2),    // 0x0004
+    AT_DIR_UL = (1 << 3),   // 0x0008
+    AT_DIR_U = (1 << 4),    // 0x0010
+    AT_DIR_UR = (1 << 5),   // 0x0020
+    AT_DIR_R = (1 << 6),    // 0x0040
+    AT_DIR_DR = (1 << 7),   // 0x0080
+    AT_DIR_STAB = (1 << 8), // 0x0100
 
+    AT_DIR_ALL =
+        (AT_DIR_D | AT_DIR_DL | AT_DIR_L | AT_DIR_UL | AT_DIR_U | AT_DIR_UR | AT_DIR_R | AT_DIR_DR | AT_DIR_STAB)
+};
 struct cCcD_SrcGObjAt {
     /* 0x00 */ u32 mType;
     /* 0x04 */ u32 mSPrm;
@@ -395,8 +409,8 @@ struct cCcD_SrcGObjAt {
     /* 0x0D */ u8 field_0xD;
     /* 0x0E */ u8 field_0xE;
     /* 0x0F */ u8 field_0xF;
-    /* 0x10 */ u16 field_0x10;
-    /* 0x12 */ s16 field_0x12;
+    /* 0x10 */ u16 mAtDir; // cCcD_AtDir
+    /* 0x12 */ s16 mAtAng;
 };
 
 struct cCcD_SrcGObjCo {
@@ -595,12 +609,12 @@ public:
         return mAtHitSrc.mType;
     }
 
-    void SetFlag_0xA(u16 flag) {
-        mSrc.field_0x0E = flag;
+    void SetAtDir(u16 flag) {
+        mSrc.mTgDir = flag;
     }
 
-    u16 GetFlag_0xA(u16 mask) const {
-        return mSrc.field_0x0E & mask;
+    u16 AtDir(u16 mask) const {
+        return mSrc.mTgDir & mask;
     }
     void ClrSet() {
         OffSPrm(1);
@@ -816,8 +830,8 @@ public:
     bool ChkTgBit23() const;
     bool ChkTgBit24() const;
     bool ChkTgBit25() const;
-    s32 GetTgSoundID() const;
-    s16 GetTg_0x6A() const;
+    s32 GetTgAtDir() const;
+    s16 GetTgAtAng() const;
     bool ChkTgBit8() const;
     u8 GetTg_0x4A() const;
     dAcObjBase_c *GetTgActor();
@@ -881,8 +895,8 @@ public:
     }
 
     // Related to directional attacks?
-    void SetTgFlag_0xA(u16 flag) {
-        mTg.SetFlag_0xA(flag);
+    void SetTgAtDir(u16 flag) {
+        mTg.SetAtDir(flag);
     }
 
     void SetTgSrcField_0x0C(u16 val) {
